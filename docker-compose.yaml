@@ -1,0 +1,67 @@
+version: '3.6'
+services:
+  lb:
+    container_name: 'simples_lb'
+    restart: always
+    build:
+      context: ./haproxy
+    ports:
+      - 80:80
+  service_register:
+    container_name: 'simples_service_register'
+    image: consul:latest
+    ports:
+      - '8500:8500'
+    logging:
+      driver: none
+  redis:
+    container_name: 'simples_redis'
+    image: redis:alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - db:/var/lib/redis/data
+    logging:
+      driver: none
+  database:
+    container_name: 'simples_database'
+    image: postgres:12.13-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=pg
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=twitter
+    ports:
+      - 5438:5432
+    volumes:
+      - db:/var/lib/postgresql/data
+    logging:
+      driver: none
+  rabbit:
+    image: 'rabbitmq:3-management-alpine'
+    container_name: 'simples_mq'
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+    logging:
+      driver: none
+  auth:
+    build: ./auth
+    container_name: simples_auth
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - database
+      - redis
+      - service_register
+      - lb
+
+networks:
+  default:
+    external:
+      name: SimplesNetWork
+volumes:
+  db:
