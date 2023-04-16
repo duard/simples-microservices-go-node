@@ -3,7 +3,7 @@ package database
 import (
 	"log"
 
-	"github.com/duard/go-simples-auth/auth/internal/model"
+	"github.com/duard/simples-microservices-go-node/internal/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
